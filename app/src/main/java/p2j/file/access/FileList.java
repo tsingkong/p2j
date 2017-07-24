@@ -8,7 +8,7 @@ public class FileList {
         ArrayList<String> array_list = new ArrayList<String>();
         File directory = new File(path);
         if(directory.isDirectory()) {
-            File[] files = directory.listFiles();
+            File[] files =directory.listFiles();
             for (File file : files) {
                 if(file.isDirectory()) {
                     array_list.add(file.getName());
