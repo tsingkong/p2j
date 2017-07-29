@@ -26,11 +26,13 @@ public class ApplicationModule {
     private static ParcelFileDescriptor getSeekableFileDescriptor(String src) {
         ParcelFileDescriptor fd = null;
         File pdfFile = new File(src);
-        pdfFile.setReadable(true);
-        try {
-            fd = ParcelFileDescriptor.open(pdfFile, ParcelFileDescriptor.MODE_READ_ONLY);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+        if (!pdfFile.isDirectory()) {
+            pdfFile.setReadable(true);
+            try {
+                fd = ParcelFileDescriptor.open(pdfFile, ParcelFileDescriptor.MODE_READ_ONLY);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
         }
         return fd;
     }

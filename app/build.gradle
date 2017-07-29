@@ -7,8 +7,8 @@ android {
         applicationId "com.prashanth.project3"
         minSdkVersion 21
         targetSdkVersion 25
-        versionCode 13
-        versionName "13.0"
+        versionCode 16
+        versionName "16.0"
     }
     buildTypes {
         release {
