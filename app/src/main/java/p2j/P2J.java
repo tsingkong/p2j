@@ -188,6 +188,7 @@ public class P2J extends Activity
                         startActivity(intent_image);
                     }
                 }
+                Log.i(getClass().getName(), "Path ===>: " + path);
                 break;
             }
         }
@@ -198,7 +199,9 @@ public class P2J extends Activity
         int selected = v.getId();
         switch (selected) {
             case R.id.convert_btn:
-                if (!status.getText().equals("")) {
+                String pathFromTextView = status.getText().toString();
+                File file = new File(pathFromTextView);
+                if (!status.getText().equals("") && !file.isDirectory()) {
                     Toast.makeText(getApplicationContext(), "Converting...", Toast.LENGTH_LONG).show();
                     createFolderIfNotExists(file_path);
                     timerTask();
@@ -212,18 +215,19 @@ public class P2J extends Activity
                 String up_str = file_list.upDirection(path);
                 Toast.makeText(getApplicationContext(), up_str, Toast.LENGTH_LONG).show();
                 updatePath(up_str);
-                path = up_str;
                 status.setText(path);
                 break;
         }
-
     }
 
     public void updatePath(String path_temp) {
         ArrayList<String> list = file_list.getFiles(path_temp);
-        if (list != null) {
+        if (list != null && list.size() > 0) {
             array_file_names = file_list.toArray(list);
             directory_list.setAdapter(new Rowelements(P2J.this, R.layout.custom_row, array_file_names));
+            path = path_temp;
+        } else {
+            Toast.makeText(getApplicationContext(), "Folder is empty", Toast.LENGTH_LONG).show();
         }
     }
 
