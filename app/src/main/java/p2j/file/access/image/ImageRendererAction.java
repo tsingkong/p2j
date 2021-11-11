@@ -19,6 +19,7 @@ public class ImageRendererAction extends RecursiveAction {
     private int numOfExecutors = 0;
     private int startPage = 0;
     private int endPage = 0;
+    private String prefixImageName;
     private boolean isFanOut = false;
     private UUID threadId = UUID.randomUUID();
 
@@ -29,12 +30,14 @@ public class ImageRendererAction extends RecursiveAction {
                                int numOfExecutors,
                                int startPage,
                                int endPage,
+                               String prefixImageName,
                                boolean isFanOut) {
         this.renderer = renderer;
         this.destSrc = destSrc;
         this.numOfExecutors = numOfExecutors;
         this.startPage = startPage;
         this.endPage = endPage;
+        this.prefixImageName = prefixImageName;
         this.isFanOut = isFanOut;
     }
 
@@ -42,13 +45,15 @@ public class ImageRendererAction extends RecursiveAction {
                                String destSrc,
                                int numOfExecutors,
                                int startPage,
-                               int endPage) {
+                               int endPage,
+                               String prefixImageName) {
         this.renderer = renderer;
         this.destSrc = destSrc;
         this.numOfExecutors = numOfExecutors;
         this.startPage = startPage;
         this.endPage = endPage;
-        this.pdfToJPEGConverter = new PDFToJPEGConverter(renderer, destSrc, startPage, endPage);
+        this.prefixImageName = prefixImageName;
+        this.pdfToJPEGConverter = new PDFToJPEGConverter(renderer, destSrc, startPage, endPage, prefixImageName);
     }
 
     @Override
@@ -79,13 +84,15 @@ public class ImageRendererAction extends RecursiveAction {
                     this.destSrc,
                     this.numOfExecutors,
                     startPage,
-                    endPage));
+                    endPage,
+                    prefixImageName));
         }
         subtasks.add(new ImageRendererAction(this.renderer,
                 this.destSrc,
                 this.numOfExecutors,
                 (endPage - (this.endPage % numOfExecutors)),
-                endPage));
+                endPage,
+                prefixImageName));
         return subtasks;
     }
 }

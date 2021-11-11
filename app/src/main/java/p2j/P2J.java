@@ -16,6 +16,7 @@ import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.FileProvider;
+import android.util.ArraySet;
 import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
@@ -50,7 +51,8 @@ public class P2J extends Activity
         AdapterView.OnItemLongClickListener {
     private ListView directory_list;
     private FileList file_list;
-    private String path = "", file_path = "";
+    private String path = "";
+    private ArraySet<String> array_pdf_path;
     private TextView status;
     private ImageButton convert_btn;
     private ImageButton delete_btn;
@@ -79,6 +81,8 @@ public class P2J extends Activity
         convert_btn = (ImageButton) findViewById(R.id.convert_btn);
         delete_btn = (ImageButton) findViewById(R.id.delete_btn);
         up_btn = (ImageButton) findViewById(R.id.up_btn);
+
+        array_pdf_path = new ArraySet<String>();
         file_list = new FileList();
         path = Environment.getExternalStorageDirectory().getPath();
         ArrayList<String> arrayList = file_list.getFiles(path);
@@ -132,7 +136,7 @@ public class P2J extends Activity
 
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-        file_path = path + "/" + array_file_names[position];
+        final String file_path = path + "/" + array_file_names[position];
         final AlertDialog.Builder alert_dialog = new AlertDialog.Builder(P2J.this);
         alert_dialog.setTitle("P2J");
         alert_dialog.setMessage("Do you want delete the file " + file_path + "?");
@@ -159,7 +163,6 @@ public class P2J extends Activity
         int id_ = parent.getId();
         switch (id_) {
             case R.id.listView: {
-                view.setBackgroundColor(Color.argb(100, 57, 73, 171));
                 if (parent == null) {
                     Log.d("PDF", "Parent is null");
                 }
@@ -167,16 +170,25 @@ public class P2J extends Activity
                 ArrayList<String> list = file_list.getFiles(path + "/" + array_file_names[position]);
                 if (list != null) {
 
+                    array_pdf_path.clear();
                     path = path + "/" + array_file_names[position];
                     array_file_names = file_list.toArray(list);
 
                     Rowelements rows = new Rowelements(P2J.this, R.layout.custom_row, array_file_names);
                     directory_list.setAdapter(rows);
                 } else {
-                    file_path = path + "/" + array_file_names[position];
-                    if (array_file_names[position].endsWith(".pdf")) {
+                    String file_path = path + "/" + array_file_names[position];
+                    if (array_file_names[position].toLowerCase().endsWith(".pdf")) {
                         status.setText(file_path);
-                    } else if (array_file_names[position].endsWith(".jpg")) {
+                        //
+                        if(array_pdf_path.contains(file_path)) {
+                            array_pdf_path.remove(file_path);
+                            view.setBackgroundColor(Color.argb(100, 255, 255, 255));
+                        } else {
+                            array_pdf_path.add(file_path);
+                            view.setBackgroundColor(Color.argb(100, 57, 73, 171));
+                        }
+                    } else if (array_file_names[position].toLowerCase().endsWith(".jpg")) {
                         Intent intent_image = new Intent();
                         intent_image.setAction(Intent.ACTION_VIEW);
 
@@ -199,14 +211,33 @@ public class P2J extends Activity
         int selected = v.getId();
         switch (selected) {
             case R.id.convert_btn:
-                String pathFromTextView = status.getText().toString();
-                File file = new File(pathFromTextView);
-                if (!status.getText().equals("") && !file.isDirectory()) {
-                    Toast.makeText(getApplicationContext(), "Converting...", Toast.LENGTH_LONG).show();
-                    createFolderIfNotExists(file_path);
-                    timerTask();
-                    ImageRendererProcessor imageRendererProcessor = new ImageRendererProcessor(file_path, handler, runnable);
-                    imageRendererProcessor.execute();
+                // if (!status.getText().equals("") && !file.isDirectory()) {
+                if (!array_pdf_path.isEmpty()) {
+                    String[] pdf_path = new String[array_pdf_path.size()];
+                    array_pdf_path.toArray(pdf_path);
+                    for (String pathFromTextView : pdf_path) {
+                        File file = new File(pathFromTextView);
+                        // 构造 image 的路径
+                        String fileMainName = file.getName();
+                        int iDot = fileMainName.lastIndexOf(".");
+                        if (iDot >= 1) {
+                            fileMainName = fileMainName.substring(0, iDot);
+                        }
+
+                        if (false) {
+                            String image_path = file.getParent() + File.separator + fileMainName + "-image";
+                            String prefixImageName = "";
+                        }
+
+                        String image_path = file.getParent();
+                        String prefixImageName = fileMainName + "-";
+                        Toast.makeText(getApplicationContext(), "Converting...", Toast.LENGTH_LONG).show();
+                        createFolderIfNotExists(image_path);
+                        timerTask();
+                        ImageRendererProcessor imageRendererProcessor = new ImageRendererProcessor(
+                                pathFromTextView, image_path, prefixImageName, handler, runnable);
+                        imageRendererProcessor.execute();
+                    }
                 } else {
                     Toast.makeText(getApplicationContext(), "Select a File", Toast.LENGTH_LONG).show();
                 }
@@ -223,6 +254,7 @@ public class P2J extends Activity
     public void updatePath(String path_temp) {
         ArrayList<String> list = file_list.getFiles(path_temp);
         if (list != null && list.size() > 0) {
+            array_pdf_path.clear();
             array_file_names = file_list.toArray(list);
             directory_list.setAdapter(new Rowelements(P2J.this, R.layout.custom_row, array_file_names));
             path = path_temp;
@@ -250,8 +282,8 @@ public class P2J extends Activity
 
     @NonNull
     private String createFolderIfNotExists(String src) {
-        String folderPath = src.split(".pdf")[0];
-        File folder = new File(folderPath);
+        // String folderPath = src.split(".pdf")[0];
+        File folder = new File(src);
         if (!folder.exists()) {
             folder.mkdirs();
         }

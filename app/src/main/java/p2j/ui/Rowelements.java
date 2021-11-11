@@ -66,11 +66,11 @@ public class Rowelements extends ArrayAdapter<String> {
 
         String file_name = file_name_list[position];
         file_name_view.setText(file_name);
-        if(!(file_name.endsWith(".pdf")||file_name.endsWith(".jpg"))){
+        if(!(file_name.toLowerCase().endsWith(".pdf")||file_name.toLowerCase().endsWith(".jpg"))){
             icon_view.setImageResource(R.drawable.folder);
-        }else if(file_name.endsWith(".pdf")){
+        }else if(file_name.toLowerCase().endsWith(".pdf")){
             icon_view.setImageResource(R.drawable.pdf_icon);
-        }else if(file_name.endsWith(".jpg")){
+        }else if(file_name.toLowerCase().endsWith(".jpg")){
             icon_view.setImageResource(R.drawable.jpg);
         }
         return convertView;

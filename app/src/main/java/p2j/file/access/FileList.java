@@ -19,7 +19,7 @@ public class FileList {
                 for (File file : files) {
 
                     if (file.isFile()) {
-                        if (file.getName().endsWith(".pdf") || file.getName().endsWith(".jpg")) {
+                        if (file.getName().toLowerCase().endsWith(".pdf") || file.getName().toLowerCase().endsWith(".jpg")) {
                             array_list.add(file.getName());
                         }
                     }
